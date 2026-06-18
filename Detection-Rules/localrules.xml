@@ -1,0 +1,766 @@
+<!-- Local rules -->
+<!-- Modify it at your will. -->
+<!-- Copyright (C) 2015, Wazuh Inc. -->
+<group name="local,syslog,sshd,">
+  <rule id="100001" level="5">
+    <if_sid>5716</if_sid>
+    <srcip>1.1.1.1</srcip>
+    <description>sshd: authentication failed from IP 1.1.1.1.</description>
+    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
+  </rule>
+</group>
+
+<!-- ============================================================ -->
+<!-- SYSMON BASE RULE                                             -->
+<!-- ============================================================ -->
+<group name="windows,sysmon,">
+
+  <rule id="200000" level="0">
+    <if_sid>18101</if_sid>
+    <match>Microsoft-Windows-Sysmon</match>
+    <description>Sysmon event on $(data.system_name)</description>
+    <group>sysmon,</group>
+  </rule>
+
+  <rule id="200001" level="3">
+    <if_sid>200000</if_sid>
+    <id>^1$</id>
+    <description>Sysmon: Process Created on $(data.system_name)</description>
+    <group>sysmon_event1,process_creation,</group>
+  </rule>
+
+  <rule id="200002" level="6">
+    <if_sid>200000</if_sid>
+    <id>^2$</id>
+    <description>Sysmon: File Creation Time Modified (Timestomping) on $(data.system_name)</description>
+    <group>sysmon_event2,</group>
+    <mitre>
+      <id>T1070.006</id>
+    </mitre>
+  </rule>
+
+  <rule id="200003" level="3">
+    <if_sid>200000</if_sid>
+    <id>^3$</id>
+    <description>Sysmon: Network Connection on $(data.system_name)</description>
+    <group>sysmon_event3,network_connection,</group>
+  </rule>
+
+  <rule id="200004" level="3">
+    <if_sid>200000</if_sid>
+    <id>^5$</id>
+    <description>Sysmon: Process Terminated on $(data.system_name)</description>
+    <group>sysmon_event5,</group>
+  </rule>
+
+  <rule id="200005" level="6">
+    <if_sid>200000</if_sid>
+    <id>^6$</id>
+    <description>Sysmon: Driver Loaded on $(data.system_name)</description>
+    <group>sysmon_event6,</group>
+  </rule>
+
+  <rule id="200006" level="3">
+    <if_sid>200000</if_sid>
+    <id>^7$</id>
+    <description>Sysmon: DLL Loaded on $(data.system_name)</description>
+    <group>sysmon_event7,</group>
+  </rule>
+
+  <rule id="200007" level="12">
+    <if_sid>200000</if_sid>
+    <id>^8$</id>
+    <description>SUSPICIOUS: Remote Thread Created - Possible Injection on $(data.system_name)</description>
+    <group>sysmon_event8,process_injection,</group>
+    <mitre>
+      <id>T1055</id>
+    </mitre>
+  </rule>
+
+  <rule id="200008" level="5">
+    <if_sid>200000</if_sid>
+    <id>^10$</id>
+    <description>Sysmon: Process Access on $(data.system_name)</description>
+    <group>sysmon_event10,</group>
+  </rule>
+
+  <rule id="200009" level="14">
+    <if_sid>200008</if_sid>
+    <match>lsass.exe</match>
+    <description>CRITICAL: LSASS Memory Access - Credential Dumping on $(data.system_name)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="200010" level="3">
+    <if_sid>200000</if_sid>
+    <id>^11$</id>
+    <description>Sysmon: File Created on $(data.system_name)</description>
+    <group>sysmon_event11,file_create,</group>
+  </rule>
+
+  <rule id="200011" level="5">
+    <if_sid>200000</if_sid>
+    <id>^12$</id>
+    <description>Sysmon: Registry Object Added/Deleted on $(data.system_name)</description>
+    <group>sysmon_registry,</group>
+  </rule>
+
+  <rule id="200012" level="5">
+    <if_sid>200000</if_sid>
+    <id>^13$</id>
+    <description>Sysmon: Registry Value Set on $(data.system_name)</description>
+    <group>sysmon_registry,</group>
+  </rule>
+
+  <rule id="200013" level="5">
+    <if_sid>200000</if_sid>
+    <id>^14$</id>
+    <description>Sysmon: Registry Object Renamed on $(data.system_name)</description>
+    <group>sysmon_registry,</group>
+  </rule>
+
+  <rule id="200014" level="10">
+    <if_sid>200011,200012,200013</if_sid>
+    <match>CurrentVersion\Run|Winlogon|userinit</match>
+    <description>SUSPICIOUS: Registry Run Key Modified - Persistence on $(data.system_name)</description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="200015" level="10">
+    <if_sid>200000</if_sid>
+    <id>^15$</id>
+    <description>SUSPICIOUS: Alternate Data Stream Created on $(data.system_name)</description>
+    <group>sysmon_event15,</group>
+    <mitre>
+      <id>T1564.004</id>
+    </mitre>
+  </rule>
+
+  <rule id="200016" level="3">
+    <if_sid>200000</if_sid>
+    <id>^22$</id>
+    <description>Sysmon: DNS Query on $(data.system_name)</description>
+    <group>sysmon_event22,dns_query,</group>
+  </rule>
+
+  <rule id="200017" level="5">
+    <if_sid>200000</if_sid>
+    <id>^23$</id>
+    <description>Sysmon: File Deleted on $(data.system_name)</description>
+    <group>sysmon_file_delete,</group>
+  </rule>
+
+  <rule id="200018" level="5">
+    <if_sid>200000</if_sid>
+    <id>^26$</id>
+    <description>Sysmon: File Delete Logged on $(data.system_name)</description>
+    <group>sysmon_file_delete,</group>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- WINDOWS SECURITY EVENTS                                      -->
+<!-- ============================================================ -->
+<group name="windows,security,">
+
+  <rule id="200020" level="3">
+    <if_sid>18104</if_sid>
+    <id>^4688$</id>
+    <description>Windows: New Process Created on $(data.system_name)</description>
+    <group>windows_process_create,</group>
+  </rule>
+
+  <rule id="200021" level="3">
+    <if_sid>18104</if_sid>
+    <id>^4689$</id>
+    <description>Windows: Process Terminated on $(data.system_name)</description>
+    <group>windows_process_terminate,</group>
+  </rule>
+
+  <rule id="200022" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4698$</id>
+    <description>SUSPICIOUS: Scheduled Task Created on $(data.system_name)</description>
+    <group>windows_scheduled_task,</group>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200023" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4702$</id>
+    <description>SUSPICIOUS: Scheduled Task Updated on $(data.system_name)</description>
+    <group>windows_scheduled_task,</group>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200024" level="5">
+    <if_sid>18104</if_sid>
+    <id>^4672$</id>
+    <description>Windows: Special Privileges Assigned on $(data.system_name)</description>
+    <group>windows_privilege,</group>
+  </rule>
+
+  <rule id="200025" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4720$</id>
+    <description>Windows: New User Account Created on $(data.system_name)</description>
+    <group>windows_account,</group>
+    <mitre>
+      <id>T1136</id>
+    </mitre>
+  </rule>
+
+  <rule id="200026" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4726$</id>
+    <description>Windows: User Account Deleted on $(data.system_name)</description>
+    <group>windows_account,</group>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- POWERSHELL EVENTS                                            -->
+<!-- ============================================================ -->
+<group name="windows,powershell,">
+
+  <rule id="200030" level="3">
+    <if_sid>18101</if_sid>
+    <id>^4103$</id>
+    <match>Microsoft-Windows-PowerShell</match>
+    <description>PowerShell: Module Command Executed on $(data.system_name)</description>
+    <group>powershell,</group>
+  </rule>
+
+  <rule id="200031" level="5">
+    <if_sid>18101</if_sid>
+    <id>^4104$</id>
+    <match>Microsoft-Windows-PowerShell</match>
+    <description>PowerShell: Script Block Logged on $(data.system_name)</description>
+    <group>powershell,powershell_script,</group>
+  </rule>
+
+  <rule id="200032" level="12">
+    <if_sid>200030,200031</if_sid>
+    <match>-EncodedCommand|-enc |encodedcommand</match>
+    <description>SUSPICIOUS: PowerShell Encoded Command on $(data.system_name)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="200033" level="12">
+    <if_sid>200030,200031</if_sid>
+    <match>DownloadFile|DownloadString|WebClient|Invoke-WebRequest|Net.WebClient|IWR</match>
+    <description>SUSPICIOUS: PowerShell Download Activity on $(data.system_name)</description>
+    <mitre>
+      <id>T1105</id>
+    </mitre>
+  </rule>
+
+  <rule id="200034" level="10">
+    <if_sid>200030,200031</if_sid>
+    <match>-ExecutionPolicy Bypass|-ep bypass|Set-ExecutionPolicy Unrestricted</match>
+    <description>SUSPICIOUS: PowerShell Execution Policy Bypassed on $(data.system_name)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- CMD AND PROCESS DETECTIONS                                   -->
+<!-- ============================================================ -->
+<group name="windows,cmd,">
+
+  <rule id="200040" level="3">
+    <if_sid>200001</if_sid>
+    <match>Image: .*cmd\.exe|CommandLine: .*cmd\.exe</match>
+    <description>Windows: CMD Shell Execution on $(data.system_name)</description>
+    <group>cmd_execution,</group>
+  </rule>
+
+  <rule id="200041" level="8">
+    <if_sid>200001</if_sid>
+    <match>net\.exe.*user|net\.exe.*localgroup|net1\.exe</match>
+    <description>SUSPICIOUS: User/Group Enumeration via Net.exe on $(data.system_name)</description>
+    <mitre>
+      <id>T1087</id>
+    </mitre>
+  </rule>
+
+  <rule id="200042" level="5">
+    <if_sid>200001</if_sid>
+    <match>Image: .*whoami\.exe</match>
+    <description>Windows: Whoami Discovery on $(data.system_name)</description>
+    <mitre>
+      <id>T1033</id>
+    </mitre>
+  </rule>
+
+  <rule id="200043" level="12">
+    <if_sid>200001</if_sid>
+    <match>certutil.*-decode|certutil.*-urlcache|certutil.*-split</match>
+    <description>SUSPICIOUS: CertUtil Payload Delivery on $(data.system_name)</description>
+    <mitre>
+      <id>T1140</id>
+    </mitre>
+  </rule>
+
+  <rule id="200044" level="12">
+    <if_sid>200001</if_sid>
+    <match>ParentImage: .*WINWORD|ParentImage: .*EXCEL|ParentImage: .*POWERPNT|ParentImage: .*outlook</match>
+    <description>SUSPICIOUS: Process Spawned from Office App on $(data.system_name)</description>
+    <mitre>
+      <id>T1566.001</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- RANSOMWARE DETECTION RULES                                   -->
+<!-- ============================================================ -->
+<group name="windows,ransomware,">
+
+  <rule id="200050" level="15">
+    <if_sid>200001</if_sid>
+    <match>vssadmin.*delete|Delete Shadows</match>
+    <description>RANSOMWARE DETECTED: Shadow Copy Deletion via VSSAdmin on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+  </rule>
+
+  <rule id="200051" level="15">
+    <if_sid>200001</if_sid>
+    <match>wmic.*shadowcopy.*delete|ShadowCopy.*Delete</match>
+    <description>RANSOMWARE DETECTED: Shadow Copy Deletion via WMIC on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+  </rule>
+
+  <rule id="200052" level="15">
+    <if_sid>200001</if_sid>
+    <match>bcdedit.*recoveryenabled.*no|bcdedit.*bootstatuspolicy</match>
+    <description>RANSOMWARE DETECTED: Boot Recovery Disabled on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+  </rule>
+
+  <rule id="200053" level="15">
+    <if_sid>200001</if_sid>
+    <match>wbadmin.*delete.*catalog|wbadmin.*delete.*backup|wbadmin.*delete.*systemstate</match>
+    <description>RANSOMWARE DETECTED: Windows Backup Deleted on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+  </rule>
+
+  <rule id="200054" level="14">
+    <if_sid>200001</if_sid>
+    <match>DisableRealtimeMonitoring|Set-MpPreference.*Disable|DisableIOAVProtection|DisableBehaviorMonitoring</match>
+    <description>RANSOMWARE PRE-STAGE: Windows Defender Disabled on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1562.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="200055" level="15">
+    <if_sid>200001</if_sid>
+    <match>wannacry|WannaCry|locky|petya|notpetya|ryuk|Ryuk|conti|Conti|revil|REvil|darkside|DarkSide|lockbit|LockBit|maze|Maze|sodinokibi|BlackCat</match>
+    <description>CRITICAL: Known Ransomware Process Detected on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+  <rule id="200056" level="15">
+    <if_sid>200010</if_sid>
+    <match>\.locked|\.crypto|\.crypt|\.encrypted|\.wnry|\.wncry|\.ryuk|\.conti|\.locky|\.cerber|\.zepto</match>
+    <description>CRITICAL: Ransomware File Extension Detected on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+  <rule id="200057" level="15">
+    <if_sid>200010</if_sid>
+    <match>HELP_DECRYPT|DECRYPT_INSTRUCTION|HOW_TO_RECOVER|YOUR_FILES_ARE_ENCRYPTED|HOW_TO_DECRYPT|RESTORE_FILES|RANSOM_NOTE</match>
+    <description>CRITICAL: Ransom Note File Created on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+  <rule id="200058" level="12">
+    <if_sid>200001</if_sid>
+    <match>del.*\/f.*\/s|rd.*\/s.*\/q|cipher.*\/w</match>
+    <description>SUSPICIOUS: Mass File Deletion Detected on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1485</id>
+    </mitre>
+  </rule>
+
+  <rule id="200059" level="13">
+    <if_sid>200001</if_sid>
+    <match>taskkill.*MsMpEng|taskkill.*avguard|taskkill.*bdagent|taskkill.*ekrn|taskkill.*mcshield</match>
+    <description>RANSOMWARE PRE-STAGE: Security Tool Process Killed on $(data.system_name)</description>
+    <group>ransomware,</group>
+    <mitre>
+      <id>T1562.001</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- PROTECTED FOLDER MONITORING - Credentials2026               -->
+<!-- ============================================================ -->
+<group name="windows,fim,credentials_folder,">
+
+  <rule id="200060" level="12">
+    <if_sid>18104,18105</if_sid>
+    <id>^4663$</id>
+    <match>Credentials2026</match>
+    <description>ALERT: Protected Folder Accessed - Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200066" level="12">
+    <if_sid>200060</if_sid>
+    <match>ReadData|ListDirectory</match>
+    <description>ALERT: File READ/COPIED from Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,file_read,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200067" level="13">
+    <if_sid>200060</if_sid>
+    <match>WriteData|AddFile|AppendData</match>
+    <description>ALERT: File WRITTEN/MODIFIED in Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,file_write,</group>
+    <mitre>
+      <id>T1565</id>
+    </mitre>
+  </rule>
+
+  <rule id="200068" level="14">
+    <if_sid>200060</if_sid>
+    <match>DELETE</match>
+    <description>CRITICAL: File DELETED from Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,file_delete,</group>
+    <mitre>
+      <id>T1485</id>
+    </mitre>
+  </rule>
+
+  <rule id="200069" level="13">
+    <if_sid>200060</if_sid>
+    <match>WRITE_DAC|WRITE_OWNER|WriteAttributes</match>
+    <description>CRITICAL: PERMISSIONS CHANGED on Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,permission_change,</group>
+    <mitre>
+      <id>T1222</id>
+    </mitre>
+  </rule>
+
+  <rule id="200070" level="13">
+    <if_sid>200060</if_sid>
+    <match>RENAME</match>
+    <description>ALERT: File RENAMED in Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,file_rename,</group>
+    <mitre>
+      <id>T1565</id>
+    </mitre>
+  </rule>
+
+  <rule id="200061" level="12">
+    <if_sid>200010</if_sid>
+    <match>Credentials2026</match>
+    <description>ALERT: File Created in Protected Folder Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200062" level="14">
+    <if_sid>200017,200018</if_sid>
+    <match>Credentials2026</match>
+    <description>CRITICAL: File Deleted from Protected Folder Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+    <mitre>
+      <id>T1485</id>
+    </mitre>
+  </rule>
+
+  <rule id="200063" level="12">
+    <if_sid>200001</if_sid>
+    <match>Credentials2026</match>
+    <description>ALERT: Process Targeting Protected Folder Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200064" level="10">
+    <if_sid>200011,200012,200013</if_sid>
+    <match>Credentials2026</match>
+    <description>ALERT: Registry Event Related to Protected Folder on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+  </rule>
+
+  <rule id="200065" level="15">
+    <if_sid>200060,200061,200062,200063</if_sid>
+    <match>\.locked|\.crypto|\.crypt|\.encrypted|\.wnry|\.wncry|DECRYPT|RANSOM</match>
+    <description>CRITICAL: Ransomware Activity in Protected Folder Credentials2026 on $(data.system_name)</description>
+    <group>fim,protected_folder,ransomware,</group>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- PROTECTED FILES MONITORING - testbed (.45)                  -->
+<!-- ============================================================ -->
+<group name="windows,fim,testbed_files,">
+
+  <rule id="200100" level="12">
+    <if_sid>18104,18105</if_sid>
+    <id>^4663$</id>
+    <match>lib61850.py|gateway.py</match>
+    <description>ALERT: Protected File Accessed - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200101" level="12">
+    <if_sid>200100</if_sid>
+    <match>ReadData|ListDirectory</match>
+    <description>ALERT: File READ - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,file_read,</group>
+    <mitre>
+      <id>T1005</id>
+    </mitre>
+  </rule>
+
+  <rule id="200102" level="13">
+    <if_sid>200100</if_sid>
+    <match>WriteData|AddFile|AppendData</match>
+    <description>ALERT: File WRITTEN/MODIFIED - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,file_write,</group>
+    <mitre>
+      <id>T1565</id>
+    </mitre>
+  </rule>
+
+  <rule id="200103" level="14">
+    <if_sid>200100</if_sid>
+    <match>DELETE</match>
+    <description>CRITICAL: File DELETED - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,file_delete,</group>
+    <mitre>
+      <id>T1485</id>
+    </mitre>
+  </rule>
+
+  <rule id="200104" level="13">
+    <if_sid>200100</if_sid>
+    <match>WRITE_DAC|WRITE_OWNER|WriteAttributes</match>
+    <description>CRITICAL: PERMISSIONS CHANGED - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,permission_change,</group>
+    <mitre>
+      <id>T1222</id>
+    </mitre>
+  </rule>
+
+  <rule id="200105" level="15">
+    <if_sid>200100</if_sid>
+    <match>\.locked|\.crypto|\.crypt|\.encrypted|\.wnry|\.wncry|DECRYPT|RANSOM</match>
+    <description>CRITICAL: Ransomware Activity - testbed on $(data.system_name)</description>
+    <group>fim,protected_folder,ransomware,</group>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- USERPORTAL ACCOUNT MONITORING                               -->
+<!-- ============================================================ -->
+<group name="windows,authentication,userportal,">
+
+  <rule id="200200" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4624$</id>
+    <match>userportal</match>
+    <description>ALERT: userportal account logged in on $(data.system_name)</description>
+    <group>authentication_success,userportal,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200201" level="10">
+    <if_sid>18105</if_sid>
+    <id>^4625$</id>
+    <match>userportal</match>
+    <description>WARNING: Failed login attempt on userportal account on $(data.system_name)</description>
+    <group>authentication_failed,userportal,</group>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+  <rule id="200202" level="6">
+    <if_sid>18104</if_sid>
+    <id>^4634$</id>
+    <match>userportal</match>
+    <description>INFO: userportal account logged off on $(data.system_name)</description>
+    <group>authentication_success,userportal,logoff,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200203" level="8">
+    <if_sid>18104</if_sid>
+    <id>^4778$</id>
+    <match>userportal</match>
+    <description>ALERT: Session switched TO userportal account on $(data.system_name)</description>
+    <group>authentication_success,userportal,session_switch,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200204" level="6">
+    <if_sid>18104</if_sid>
+    <id>^4779$</id>
+    <match>userportal</match>
+    <description>INFO: Session switched FROM userportal account on $(data.system_name)</description>
+    <group>authentication_success,userportal,session_switch,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200205" level="6">
+    <if_sid>18104</if_sid>
+    <id>^4800$</id>
+    <match>userportal</match>
+    <description>INFO: userportal workstation locked on $(data.system_name)</description>
+    <group>userportal,workstation,</group>
+  </rule>
+
+  <rule id="200206" level="6">
+    <if_sid>18104</if_sid>
+    <id>^4801$</id>
+    <match>userportal</match>
+    <description>INFO: userportal workstation unlocked on $(data.system_name)</description>
+    <group>userportal,workstation,</group>
+  </rule>
+
+  <rule id="200207" level="12">
+    <if_sid>200201</if_sid>
+    <match>userportal</match>
+    <description>CRITICAL: Failed login on userportal - Possible brute force on $(data.system_name)</description>
+    <group>authentication_failed,userportal,brute_force,</group>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="200208" level="8">
+    <if_sid>18104,18105</if_sid>
+    <match>userportal</match>
+    <description>ALERT: userportal account activity detected on $(data.system_name)</description>
+    <group>userportal,general_activity,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- ============================================================ -->
+<!-- CANARY ACCOUNT MONITORING - backupacc                       -->
+<!-- ============================================================ -->
+<group name="windows,canary_account,backupacc,">
+
+  <rule id="200300" level="14">
+    <if_sid>18104</if_sid>
+    <id>^4624$</id>
+    <match>backupacc</match>
+    <description>CRITICAL: Canary account backupacc logged in via SSH on $(data.system_name)</description>
+    <group>canary_account,authentication_success,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200301" level="14">
+    <if_sid>18105</if_sid>
+    <id>^4625$</id>
+    <match>backupacc</match>
+    <description>CRITICAL: Failed login attempt on canary account backupacc on $(data.system_name)</description>
+    <group>canary_account,authentication_failed,</group>
+    <mitre>
+      <id>T1110</id>
+    </mitre>
+  </rule>
+
+  <rule id="200302" level="14">
+    <if_sid>18101</if_sid>
+    <match>backupacc</match>
+    <description>CRITICAL: Canary account backupacc process execution detected on $(data.system_name)</description>
+    <group>canary_account,process_execution,</group>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+  </rule>
+
+  <rule id="200303" level="14">
+    <if_sid>200020</if_sid>
+    <match>backupacc</match>
+    <description>CRITICAL: Canary account backupacc created process on $(data.system_name)</description>
+    <group>canary_account,process_execution,</group>
+    <mitre>
+      <id>T1059</id>
+    </mitre>
+  </rule>
+
+</group>
